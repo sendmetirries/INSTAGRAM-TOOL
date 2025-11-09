@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Insta Follow Checker 💖</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f58529, #dd2a7b, #8134af, #515bd4);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    transition: background 0.5s, color 0.5s;
+  }
+
+  .container {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2rem;
+    border-radius: 25px;
+    backdrop-filter: blur(12px);
+    text-align: center;
+    width: 90%;
+    max-width: 550px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    transition: box-shadow .3s;
+  }
+
+  .container:hover { box-shadow: 0 10px 35px rgba(0,0,0,0.3); }
+
+  h1 { font-size: 1.9em; margin-bottom: 0.5em; }
+
+  /* Theme switch */
+  .switch { position: relative; display: inline-block; width: 50px; height: 25px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc; transition: .4s; border-radius: 25px;
+  }
+  .slider:before {
+    position: absolute; content: ""; height: 19px; width: 19px; left: 3px; bottom: 3px;
+    background-color: white; transition: .4s; border-radius: 50%;
+  }
+  input:checked + .slider { background-color: #515bd4; }
+  input:checked + .slider:before { transform: translateX(25px); }
+
+  .drop-zone {
+    border: 2px dashed rgba(255,255,255,0.6);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 15px 0;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    background: rgba(255,255,255,0.1);
+    border-color: #fd1d1d;
+  }
+  .drop-zone p { margin: 0; font-size: 1em; }
+
+  .upload-label {
+    font-weight: 600;
+    margin-top: 10px;
+    display: block;
+  }
+
+  .btn {
+    background-color: #fd1d1d;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1em;
+    font-size: 1em;
+    transition: 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+  .btn:hover { background-color: #c13584; transform: scale(1.05); }
+  .btn:active { transform: scale(0.97); }
+
+  .loading {
+    display: none;
+    margin-top: 1em;
+    animation: spin 1s linear infinite;
+    border: 4px solid rgba(255,255,255,0.3);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    margin: 1em auto;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 1em;
+    text-align: left;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+  li {
+    background-color: rgba(255, 255, 255, 0.2);
+    margin: 5px 0;
+    padding: 8px 12px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    animation: fadeIn 0.4s forwards;
+  }
+  @keyframes fadeIn {
+    from {opacity:0; transform:translateY(10px);}
+    to {opacity:1; transform:translateY(0);}
+  }
+  li::before { content: "👤"; margin-right: 8px; }
+
+  #resultTitle { margin-top: 1em; font-weight: 600; }
+
+  #downloadBtn {
+    display: none;
+    background-color: #00c851;
+    margin-top: 10px;
+  }
+  #downloadBtn:hover { background-color: #009d3d; }
+
+  .heart {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-size: 24px;
+    animation: floatUp 2s ease-out forwards;
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  @keyframes floatUp {
+    0% {transform: translateY(0); opacity:1;}
+    100% {transform: translateY(-150px); opacity:0;}
+  }
+
+  /* Light theme */
+  body.light {
+    background: linear-gradient(135deg, #fdfdfd, #d8d8d8);
+    color: #333;
+  }
+  body.light .container {
+    background: rgba(255,255,255,0.8);
+    color: #111;
+  }
+  body.light .drop-zone {
+    border-color: rgba(0,0,0,0.3);
+  }
+  body.light .btn {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="text-align:right;">
+    <label class="switch" aria-label="Toggle light or dark theme">
+      <input type="checkbox" id="themeToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <h1>Instagram Follow Checker 💖</h1>
+  <p>Drag & drop or upload your <b>followers</b> and <b>following</b> files below</p>
+
+  <label class="upload-label">Followers File:</label>
+  <div class="drop-zone" id="followersZone"><p>Drop followers.json / followers.html</p></div>
+
+  <label class="upload-label">Following File:</label>
+  <div class="drop-zone" id="followingZone"><p>Drop following.json / following.html</p></div>
+
+  <button class="btn" id="compareBtn">Find Non-Followers 🚀</button>
+  <div class="loading" id="loading"></div>
+
+  <h3 id="resultTitle"></h3>
+  <ul id="resultList"></ul>
+  <button id="downloadBtn" class="btn" onclick="downloadCSV()">Download CSV 📁</button>
+</div>
+
+<script>
+(function(){
+  let followers = [];
+  let following = [];
+  let notFollowingBack = [];
+  let followersFile = null;
+  let followingFile = null;
+
+  const compareBtn = document.getElementById("compareBtn");
+  const loadingDiv = document.getElementById("loading");
+  const resultTitle = document.getElementById("resultTitle");
+  const resultList = document.getElementById("resultList");
+  const downloadBtn = document.getElementById("downloadBtn");
+
+  // Theme toggle logic
+  document.getElementById("themeToggle").addEventListener("change", e => {
+    document.body.classList.toggle("light", e.target.checked);
+  });
+
+  // Prevent navigation when files are dropped outside drop zones
+  window.addEventListener('dragover', e => e.preventDefault());
+  window.addEventListener('drop', e => e.preventDefault());
+
+  // Normalize usernames for case/whitespace
+  function normalize(arr) {
+    return arr.map(a => a.trim().toLowerCase()).filter(a => !!a);
+  }
+
+  // Drop/click zones with file-type validation
+  function setupDropZone(id, assignFile) {
+    const zone = document.getElementById(id);
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault(); zone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && !/(\.json|\.html)$/i.test(file.name)) {
+        alert("Only .json or .html files are supported."); return;
+      }
+      if (file) { assignFile(file); zone.querySelector('p').textContent = `✅ ${file.name}`; }
+    });
+    zone.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = '.json,.html';
+      input.onchange = () => {
+        if (input.files[0] && !/(\.json|\.html)$/i.test(input.files[0].name)) {
+          alert("Only .json or .html files are supported."); return;
+        }
+        if (input.files[0]) {
+          assignFile(input.files[0]);
+          zone.querySelector('p').textContent = `✅ ${input.files[0].name}`;
+        }
+      };
+      input.click();
+    });
+  }
+  setupDropZone('followersZone', file => followersFile = file);
+  setupDropZone('followingZone', file => followingFile = file);
+
+  // Parse Instagram data (JSON or HTML)
+  function parseFile(file, callback) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const content = e.target.result;
+      try {
+        const json = JSON.parse(content);
+        const usernames = json.map(x => x.string_list_data ? x.string_list_data[0].value : x.value);
+        callback(usernames);
+      } catch {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = content;
+        const links = Array.from(tempDiv.querySelectorAll("a")).map(a => a.textContent.trim());
+        callback(links);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // Main comparison & UI logic with debounce
+  compareBtn.addEventListener("click", function() {
+    if (compareBtn.disabled) return;
+    compareBtn.disabled = true;
+    compareLists().finally(() => { compareBtn.disabled = false; });
+  });
+
+  async function compareLists() {
+    if (!followersFile || !followingFile) {
+      alert("Please upload both files first!");
+      return;
+    }
+    loadingDiv.style.display = "block";
+    resultTitle.textContent = "";
+    resultList.innerHTML = "";
+    downloadBtn.style.display = "none";
+
+    try {
+      await Promise.all([
+        new Promise(resolve => parseFile(followersFile, users => { followers = normalize(users); resolve(); })),
+        new Promise(resolve => parseFile(followingFile, users => { following = normalize(users); resolve(); }))
+      ]);
+      notFollowingBack = following.filter(u => !followers.includes(u));
+      loadingDiv.style.display = "none";
+
+      const followBackCount = following.length - notFollowingBack.length;
+      // Handle division by zero (should never happen but robust)
+      const ratio = following.length === 0 ? '0' : ((followBackCount / following.length) * 100).toFixed(1);
+      resultTitle.textContent =
+        `😢 ${notFollowingBack.length} users don't follow you back (${ratio}% follow back)`;
+      resultList.innerHTML = "";
+      notFollowingBack.forEach(user => {
+        const li = document.createElement("li");
+        li.textContent = user;
+        resultList.appendChild(li);
+      });
+
+      if (notFollowingBack.length > 0) {
+        downloadBtn.style.display = "inline-block";
+      } else {
+        downloadBtn.style.display = "none";
+      }
+
+      // Floating heart animation
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.textContent = "💖";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 2000);
+    } catch (err) {
+      loadingDiv.style.display = "none";
+      alert("There was an error processing your files. Please check the format.");
+    }
+  }
+
+  // CSV download
+  window.downloadCSV = function() {
+    const csvContent = "data:text/csv;charset=utf-8," +
+      "Username\n" + notFollowingBack.map(name=>`"${name.replace(/"/g,'""')}"`).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "not_following_back.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+})();
+</script>
+</body>
+</html>
